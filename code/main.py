@@ -1,7 +1,7 @@
 import pygame, sys
 from player import Player
 from datetime import datetime
-from alien import Alien, Extra
+from gift import Gift, Extra
 from random import choice, randint
 from menu import Menu, GameOverScreen
  
@@ -24,11 +24,10 @@ class Game:
 		self.start_time = pygame.time.get_ticks()
 		
 		
-		# Alien setup
-		self.aliens = pygame.sprite.Group()
-		self.alien_lasers = pygame.sprite.Group()
-		self.alien_setup(rows = 9, cols = 9)
-		self.alien_direction = 1
+		# gift setup
+		self.gift = pygame.sprite.Group()
+		self.gift_setup(rows = 9, cols = 9)
+		self.gift_direction = 1
 
 		# Extra setup
 		self.extra = pygame.sprite.GroupSingle()
@@ -45,37 +44,37 @@ class Game:
 
 	
 
-	def alien_setup(self,rows,cols,x_distance = 60,y_distance = 48,x_offset = 70, y_offset = 100):
+	def gift_setup(self,rows,cols,x_distance = 60,y_distance = 48,x_offset = 70, y_offset = 100):
 		for row_index, row in enumerate(range(rows)):
 			for col_index, col in enumerate(range(cols)):
 				x = col_index * x_distance + x_offset
 				y = row_index * y_distance + y_offset
 				
-				if row_index == 0: alien_sprite = Alien('yellow',x,y)
-				elif row_index == 1: alien_sprite = Alien('green',x,y)
-				elif row_index == 2: alien_sprite = Alien('blue',x,y)
-				elif row_index == 3: alien_sprite = Alien('white',x,y)
-				elif row_index == 4: alien_sprite = Alien('black',x,y)
-				else: alien_sprite = Alien('red',x,y)
-				self.aliens.add(alien_sprite)
+				if row_index == 0: gift_sprite = Gift('yellow',x,y)
+				elif row_index == 1: gift_sprite = Gift('green',x,y)
+				elif row_index == 2: gift_sprite = Gift('blue',x,y)
+				elif row_index == 3: gift_sprite = Gift('white',x,y)
+				elif row_index == 4: gift_sprite = Gift('black',x,y)
+				else: gift_sprite = Gift('red',x,y)
+				self.gift.add(gift_sprite)
 
-	def alien_position_checker(self):
-		all_aliens = self.aliens.sprites()
-		for alien in all_aliens:
-			if alien.rect.right >= screen_width:
-				self.alien_direction = -1
-				self.alien_move_down(2)
-			elif alien.rect.left <= 0:
-				self.alien_direction = 1
-				self.alien_move_down(2)
+	def gift_position_checker(self):
+		all_gift = self.gift.sprites()
+		for gift in all_gift:
+			if gift.rect.right >= screen_width:
+				self.gift_direction = -1
+				self.gift_move_down(2)
+			elif gift.rect.left <= 0:
+				self.gift_direction = 1
+				self.gift_move_down(2)
 
-	def alien_move_down(self,distance):
-		if self.aliens:
-			for alien in self.aliens.sprites():
-				alien.rect.y += distance
+	def gift_move_down(self,distance):
+		if self.gift:
+			for gift in self.gift.sprites():
+				gift.rect.y += distance
 
 	
-	def extra_alien_timer(self):
+	def extra_gift_timer(self):
 		self.extra_spawn_time -= 1
 		if self.extra_spawn_time <= 0:
 			self.extra.add(Extra(choice(['right','left']),screen_width))
@@ -92,11 +91,11 @@ class Game:
 					laser.kill()
 					
 
-				# alien collisions
-				aliens_hit = pygame.sprite.spritecollide(laser,self.aliens,True)
-				if aliens_hit:
-					for alien in aliens_hit:
-						self.score += alien.value
+				# gift collisions
+				gift_hit = pygame.sprite.spritecollide(laser,self.gift,True)
+				if gift_hit:
+					for gift in gift_hit:
+						self.score += gift.value
 					laser.kill()
 					self.explosion_sound.play()
 
@@ -133,7 +132,7 @@ class Game:
 		screen.blit(score_surf,score_rect)
 
 	def victory_message(self):
-		if not self.aliens.sprites():
+		if not self.gift.sprites():
 			victory_surf = self.font.render('You won',False,'white')
 			victory_rect = victory_surf.get_rect(center = (screen_width / 2, screen_height / 2))
 			screen.blit(victory_surf,victory_rect)
@@ -141,15 +140,15 @@ class Game:
 	def run(self):
 		self.player.update()
 		self.extra.update()
-		self.aliens.update(self.alien_direction)
-		self.alien_position_checker()
-		self.extra_alien_timer()
+		self.gift.update(self.gift_direction)
+		self.gift_position_checker()
+		self.extra_gift_timer()
 		self.collision_checks()
 		
 		self.player.sprite.lasers.draw(screen)
 		self.player.draw(screen)
 		self.blocks.draw(screen)
-		self.aliens.draw(screen)
+		self.gift.draw(screen)
 		self.extra.draw(screen)
 		self.display_score()
 		self.countdown(60)
