@@ -30,19 +30,20 @@ class Game:
 		self.gift_direction = 1
 
 		# Extra setup
-		self.extra = pygame.sprite.GroupSingle()
-		self.extra_spawn_time = randint(40,80)
+		
 
 		# Audio
 		music = pygame.mixer.Sound('../audio/music.mp3')
 		music.set_volume(0.2)
-		music.play(loops = -1)
+		music.play()
 		self.laser_sound = pygame.mixer.Sound('../audio/laser.wav')
 		self.laser_sound.set_volume(0.5)
 		self.explosion_sound = pygame.mixer.Sound('../audio/explosion.wav')
 		self.explosion_sound.set_volume(0.3)
 
-	
+		self.extra_group = pygame.sprite.Group()
+		self.extra = Extra(choice(['right', 'left']), screen_width)
+		self.extra_group.add(self.extra)
 
 	def gift_setup(self,rows,cols,x_distance = 60,y_distance = 48,x_offset = 70, y_offset = 100):
 		for row_index, row in enumerate(range(rows)):
@@ -55,6 +56,10 @@ class Game:
 				elif row_index == 2: gift_sprite = Gift('blue',x,y)
 				elif row_index == 3: gift_sprite = Gift('white',x,y)
 				elif row_index == 4: gift_sprite = Gift('black',x,y)
+				elif row_index == 5: gift_sprite = Gift('human',x,y)
+				elif row_index == 6: gift_sprite = Gift('no',x,y)
+				elif row_index == 6: gift_sprite = Gift('ring',x,y)
+
 				else: gift_sprite = Gift('red',x,y)
 				self.gift.add(gift_sprite)
 
@@ -63,22 +68,8 @@ class Game:
 		for gift in all_gift:
 			if gift.rect.right >= screen_width:
 				self.gift_direction = -1
-				self.gift_move_down(2)
 			elif gift.rect.left <= 0:
 				self.gift_direction = 1
-				self.gift_move_down(2)
-
-	def gift_move_down(self,distance):
-		if self.gift:
-			for gift in self.gift.sprites():
-				gift.rect.y += distance
-
-	
-	def extra_gift_timer(self):
-		self.extra_spawn_time -= 1
-		if self.extra_spawn_time <= 0:
-			self.extra.add(Extra(choice(['right','left']),screen_width))
-			self.extra_spawn_time = randint(400,800)
 
 	def collision_checks(self):
 
@@ -100,8 +91,8 @@ class Game:
 					self.explosion_sound.play()
 
 				# extra collision
-				if pygame.sprite.spritecollide(laser,self.extra,True):
-					self.score += 500
+				if pygame.sprite.spritecollide(laser,self.extra_group,False):
+					self.score -= 500
 					laser.kill()
 
 
@@ -139,20 +130,22 @@ class Game:
 
 	def run(self):
 		self.player.update()
-		self.extra.update()
 		self.gift.update(self.gift_direction)
 		self.gift_position_checker()
-		self.extra_gift_timer()
 		self.collision_checks()
 		
+		self.extra_group.update(screen_width)
+		self.extra_group.draw(screen)
+
 		self.player.sprite.lasers.draw(screen)
 		self.player.draw(screen)
 		self.blocks.draw(screen)
 		self.gift.draw(screen)
-		self.extra.draw(screen)
 		self.display_score()
 		self.countdown(60)
 		self.victory_message()
+		if self.score <= 0:
+			self.score = 0
 
 
 if __name__ == '__main__':
@@ -173,7 +166,7 @@ if __name__ == '__main__':
 
 	game_over_screen = GameOverScreen()
 	game_over = False
-	background = pygame.image.load('../graphics/background.png').convert()
+	background_end = pygame.image.load('../graphics/background.png').convert()
 
 	while True:
 		for event in pygame.event.get():
