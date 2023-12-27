@@ -15,18 +15,24 @@ class Gift(pygame.sprite.Sprite):
 		self.rect.x += direction
 
 class Extra(pygame.sprite.Sprite):
-	def __init__(self,side,screen_width):
-		super().__init__()
-		self.image = pygame.image.load('../graphics/extra.png').convert_alpha()
-		
-		if side == 'right':
-			x = screen_width + 50
-			self.speed = - 3
-		else:
-			x = -50
-			self.speed = 3
+    def __init__(self, side, screen_width):
+        super().__init__()
+        self.image = pygame.image.load('../graphics/extra.png').convert_alpha()
+        
+        if side == 'right':
+            self.rect = self.image.get_rect(topleft=(screen_width + 50, 600))
+            self.direction = -1  # Ban đầu di chuyển sang trái
+        else:
+            self.rect = self.image.get_rect(topleft=(-50, 600))
+            self.direction = 1  # Ban đầu di chuyển sang phải
 
-		self.rect = self.image.get_rect(topleft = (x,80))
+        self.speed = 7
 
-	def update(self):
-		self.rect.x += self.speed
+    def update(self, screen_width):
+        self.rect.x += self.speed * self.direction
+
+        # Kiểm tra nếu chạm vào biên trái hoặc biên phải thì đổi hướng di chuyển
+        if self.rect.left <= 0:
+            self.direction = 1  # Đổi hướng sang phải
+        elif self.rect.right >= screen_width:
+            self.direction = -1  # Đổi hướng sang trái
